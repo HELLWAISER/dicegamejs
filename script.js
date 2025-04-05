@@ -205,7 +205,7 @@ function mousePressed() {
             tentativas = 6;
             pontos = 0;
             dado = 0;
-            meta += 5;
+            meta += 4;
             // Toca próxima música de fase
             if (sounds[`stage${fase}`]) {
               sounds[`stage${fase}`].loop();
