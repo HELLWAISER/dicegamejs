@@ -54,14 +54,45 @@ function preload() {
   }
 }
 
-
 function mousePressed() {
+  // Toca a música da splash screen se ainda não estiver tocando
+  if (gameState === "start" && !sounds.splashScreen.isPlaying()) {
+    sounds.splashScreen.loop();
+
+    if (tentativas === 0 && pontos < meta) {
+      sounds[`stage${fase}`].stop();
+      sounds.gameover.play();
+      gameState = "gameOver";
+
+      setTimeout(() => {
+        resetarJogo();
+      }, 4000);
+
+      // Volta para a tela inicial depois que o som terminar
+      sounds.gameover.onended(() => {
+        gameState = "start";
+        tentativas = 6;
+        pontos = 0;
+        dado = 0;
+        fase = 1;
+        meta = 6;
+        podeRolar = true;
+      });
+    }
+  }
 
   function touchStarted() {
     mousePressed();
     return false; // evita scroll acidental da página
   }
 
+  // Toca a música da splash screen se ainda não estiver tocando
+  if (!sounds.splashScreen.isPlaying()) {
+    sounds.splashScreen.loop();
+  }
+  else if (gameState === "gameOver") {
+    resetarJogo();
+  }
 
   // Clique na TELA INICIAL (start)
   if (gameState === "start") {
@@ -174,7 +205,7 @@ function mousePressed() {
             tentativas = 6;
             pontos = 0;
             dado = 0;
-            meta += 2;
+            meta += 5;
             // Toca próxima música de fase
             if (sounds[`stage${fase}`]) {
               sounds[`stage${fase}`].loop();
@@ -191,6 +222,17 @@ function mousePressed() {
     }
   }
 }
+
+function resetarJogo() {
+  tentativas = 6;
+  pontos = 0;
+  dado = 0;
+  fase = 1;
+  meta = 6;
+  podeRolar = true;
+  gameState = "start";
+}
+
 
 /* Setup inicial */
 function setup() {
@@ -231,12 +273,31 @@ function draw() {
   }
 }
 
+
+function gameOverScreen() {
+  // Mostra imagem de fundo
+  if (images.gameover) {
+    imageMode(CENTER);
+    image(images.gameover, width / 2, height / 2, width, height);
+  }
+
+  // Texto adicional (não necessário)
+  fill(255);
+  textSize(width > 600 ? width * 0.03 : width * 0.045);
+  textAlign(CENTER, BOTTOM);
+  //text("Você perdeu... Voltando ao menu", width / 2, height - 50);
+}
+
 /* Tela inicial (Splash Screen) */
 function startGameScreen() {
   // Fundo com imagem
   if (images.splashScreen) {
-    imageMode(CORNER);
-    image(images.splashScreen, 0, 0, width, height); // preencher tela inteira
+    imageMode(CENTER);
+    let img = images.splashScreen;
+    let scaleRatio = max(width / img.width, height / img.height);
+    let newW = img.width * scaleRatio;
+    let newH = img.height * scaleRatio;
+    image(img, width / 2, height / 2, newW, newH);
   }
 
   // Filtro semi-transparente escuro
@@ -276,7 +337,6 @@ function startGameScreen() {
 function playGame() {
   // Fundo da fase
   imageMode(CORNER);
-
 
   let imagemFase = images[`stage${fase}`];
   if (imagemFase) {
